@@ -9,12 +9,15 @@ public class Explosion {
     Texture texture;
     private int timer;
     private boolean end;
+    private int[] pos;
 
 
     public Explosion(int x, int y) {
         texture = new Texture(Gdx.files.internal(EXPLOSION_TEXTURE));
         timer = 0;
         end = false;
+
+        pos = new int[]{x, y};
     }
 
     public void update() {
@@ -31,5 +34,17 @@ public class Explosion {
 
     public void dispose() {
         texture.dispose();
+    }
+
+    public Texture getTexture() {
+        return texture;
+    }
+
+    public int[] getPos() {
+        return pos;
+    }
+
+    public boolean getEnd() {
+        return end;
     }
 }

@@ -7,7 +7,8 @@ import static ixodev.spaceinvaders.Constants.*;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
-	public static void main (String[] args) {
+
+	public DesktopLauncher() {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setWindowedMode(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -15,5 +16,9 @@ public class DesktopLauncher {
 		config.setTitle(WINDOW_TITLE);
 		config.setResizable(false);
 		new Lwjgl3Application(new Game(), config);
+	}
+
+	public static void main (String[] args) {
+		new DesktopLauncher();
 	}
 }

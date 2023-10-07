@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import static ixodev.spaceinvaders.Constants.*;
 
@@ -24,11 +25,11 @@ public class Game extends ApplicationAdapter {
 
 	ArrayList<Alien> aliens;
 	ArrayList<Bullet> bullets;
+	ArrayList<Explosion> explosions;
 
 	boolean gameOver;
 
 	BitmapFont font;
-	GlyphLayout glyphLayout;
 
 	public int bulletController;
 
@@ -48,11 +49,12 @@ public class Game extends ApplicationAdapter {
 
 		gameOver = false;
 		font = new BitmapFont(Gdx.files.internal("assets/fonts/font.fnt"));
-		glyphLayout = new GlyphLayout(font, GAME_OVER_TEXT);
 
 		bullets = new ArrayList<Bullet>();
 
 		bulletController = 0;
+
+		explosions = new ArrayList<Explosion>();
 
 	}
 
@@ -100,6 +102,16 @@ public class Game extends ApplicationAdapter {
 		}
 
 		detectCollisions();
+
+		Iterator<Explosion> iterator = explosions.iterator();
+		while(iterator.hasNext()) {
+			Explosion explosion = iterator.next();
+			explosion.update();
+			if(explosion.getEnd()) {
+				explosion.dispose();
+				iterator.remove();
+			}
+		}
 	}
 
 	public void renderBackground() {
@@ -116,11 +128,12 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void render () {
+		batch.begin();
+
 		if(!gameOver) {
 			update();
 
 			ScreenUtils.clear(0, 0, 0, 0);
-			batch.begin();
 
 			renderBackground();
 
@@ -135,15 +148,20 @@ public class Game extends ApplicationAdapter {
 
 			renderAliens();
 
-			batch.end();
+			for(Explosion explosion : explosions) {
+				batch.draw(explosion.getTexture(), explosion.getPos()[0], explosion.getPos()[1], explosion.getTexture().getWidth(),
+						explosion.getTexture().getHeight());
+			}
+
+			font.draw(batch, CREDITS_TEXT, 0, WINDOW_HEIGHT - 5);
+
 		} else {
 			ScreenUtils.clear(1, 0, 0, 1);
-			batch.begin();
 
-			font.draw(batch, GAME_OVER_TEXT, (float) WINDOW_WIDTH / 2, (float) WINDOW_HEIGHT / 2);
-
-			batch.end();
+			font.draw(batch, GAME_OVER_TEXT, 0, WINDOW_HEIGHT - 5);
 		}
+
+		batch.end();
 	}
 
 	public void detectCollisions() {
@@ -162,6 +180,10 @@ public class Game extends ApplicationAdapter {
 				if (Math.sqrt(distancePowerTwo) <= (double) MAX_ALIEN_DISTANCE) {
 					alien.chooseRandomOrigin();
 					bullet.setToBeDeleted();
+
+					float mx = (c1[0] + c2[0]) / 2;
+					float my = (c1[1] + c2[1]) / 2;
+					launchExplosion((int) mx, (int) my);
 				}
 
 			}
@@ -178,6 +200,10 @@ public class Game extends ApplicationAdapter {
 					if (Math.sqrt(distancePowerTwo) <= (double) MAX_ALIEN_DISTANCE) {
 						alien.chooseRandomOrigin();
 						alien2.chooseRandomOrigin();
+
+						float mx = (c1[0] + c2[0]) / 2;
+						float my = (c1[1] + c2[1]) / 2;
+						launchExplosion((int) mx, (int) my);
 					}
 				}
 			}
@@ -192,6 +218,9 @@ public class Game extends ApplicationAdapter {
 			if (Math.sqrt(distancePowerTwo) <= (double) MAX_ALIEN_DISTANCE) {
 				//Death & game over screen
 				gameOver = true;
+				float mx = (c1[0] + c2[0]) / 2;
+				float my = (c1[1] + c2[1]) / 2;
+				launchExplosion((int) mx, (int) my);
 			}
 
 		}
@@ -203,6 +232,10 @@ public class Game extends ApplicationAdapter {
 			}
 		}
 
+	}
+
+	public void launchExplosion(int x, int y) {
+		explosions.add(new Explosion(x, y));
 	}
 
 	@Override
@@ -217,6 +250,10 @@ public class Game extends ApplicationAdapter {
 
 		for(Bullet bullet : bullets) {
 			bullet.dispose();
+		}
+
+		for(Explosion explosion : explosions) {
+			explosion.dispose();
 		}
 	}
 }
